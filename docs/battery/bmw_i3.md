@@ -36,6 +36,26 @@ For this battery type, use the option called "BMW i3" under the "Battery Protoco
 
 ![image](../images/bmw-i3-02.png){ width="487" height="90" }
 
+### SOC Havrla (voltage-based SOC)
+The SOC reported by the i3 BMS can drift a long way from the real state of charge, especially if the battery is not balanced regularly. SOC Havrla is an alternative SOC that the Battery-Emulator calculates itself from the cell voltages. It is selected with the **SOC Havrla** setting, which is shown on the Settings page when "BMW i3" is the selected battery:
+
+| Mode | What the emulator reports as SOC |
+| ---- | -------------------------------- |
+| **Disable (use BMS SOC)** | The SOC from the BMS, as before. This is the default. |
+| **Auto (use Havrla if >3% difference)** | The BMS SOC, unless SOC Havrla differs from it by more than 3 percentage points. Then SOC Havrla is used. |
+| **Enable (always use Havrla)** | Always SOC Havrla. |
+
+How it is calculated:
+
+- Above an average cell voltage of 3.8 V the highest cell voltage is used, below it the lowest. A full pack is then judged by its highest cell, and an empty pack by its lowest.
+- The cell voltage is corrected for the voltage drop over the pack's internal resistance at the present current. The emulator estimates that resistance itself: when the current steps by at least 2 A, it compares the voltage before and after the step. It starts out from 80 mΩ and ignores results outside 5-500 mΩ.
+- The corrected voltage is looked up in a voltage/SOC table for the detected pack size (60, 94 or 120 Ah), and the result is smoothed so it does not jump with every load change.
+
+Both values are shown on the **More Battery Info** page as "Internal resistance" and "SOC Havrla". Even with the setting on Disable, you can compare them with the BMS SOC there before you switch modes.
+
+!!! note "NOTE"
+    SOC Havrla is not available on the LilyGo T-CAN485 and the ESP32 DevKit, as these boards don't have the flash space for it. On those boards the BMS SOC is always used.
+
 ## Connection diagram
 
 ### High voltage connector
